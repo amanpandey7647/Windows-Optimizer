@@ -6,7 +6,7 @@ title Windows Optimizer
 :: Script Information
 echo.
 echo   --------------------------------------------------------
-echo     Windows Optimizer v6.0 (Ultimate Performance)
+echo     Windows Optimizer v6.1 (Ultimate Performance)
 echo     Copyright (C) 2021-2025 Aman Pandey
 echo   --------------------------------------------------------
 echo.
@@ -36,7 +36,7 @@ echo   Windows Optimizer - Main Menu
 echo  --------------------------------------------------------
 echo.
 echo  Choose an optimization option:
-echo    1.  Clear Temporary Files (time consuming so start in last)
+echo    1.  Clear Temporary Files
 echo    2.  Restart Tasks
 echo    3.  Defragment Disk (HDD Only)
 echo    4.  Clear Event Logs
@@ -72,33 +72,63 @@ if errorlevel 1 goto :CLEANTEMP
     echo   Clearing Temporary Files & Caches... 
     echo  --------------------------------------------------------
     echo.
-    del /f /q /s c:\windows\temp\*.* >nul 2>&1
-    rd /s /q c:\windows\temp >nul 2>&1
+
+    ipconfig /flushdns
+
+    :: --- System-wide Temporary Files ---
+    del /q /f /s "%SystemRoot%\Temp\*" >nul 2>&1
+    rd /s /q "%SystemRoot%\Temp" >nul 2>&1
+    md "%SystemRoot%\Temp" >nul 2>&1
+
+    del /q /f /s "%SystemRoot%\Prefetch\*" >nul 2>&1
+    rd /s /q "%SystemRoot%\Prefetch" >nul 2>&1
+    md "%SystemRoot%\Prefetch" >nul 2>&1 
+    :: --- End System-wide Temporary Files ---
+
+    :: Standard Temporary File Cleanup 
+    /s /f /q c:\windows\temp\*.*
+    rd /s /q c:\windows\temp
     md c:\windows\temp
+    del /s /f /q C:\WINDOWS\Prefetch
+    del /s /f /q %temp%\*.*
+    rd /s /q %temp%
+    md %temp%
+    del /f /q c:\windows\tempor~1
+    cls
+    pause
+    echo Wait for a While
+    del /s /f /q C:\Windows\temp
+    del /s /f /q %USERPROFILE%\AppData\Local\Temp\*.*
+    del /s /f /q %USERPROFILE%\AppData\LocalLow\Temp\*.*
+    del /s /f /q %USERPROFILE%\history
+    del /s /f /q %USERPROFILE%\cookies
+    del /s /f /q %USERPROFILE%\recent
+    del /s /f /q %USERPROFILE%\printers
+    del /s /f /q c:\WIN386.SWP
 
-    del /f /q /s C:\WINDOWS\Prefetch\*.* >nul 2>&1
-    del /f /q /s "%temp%\*.*" >nul 2>&1
-    rd /s /q "%temp%" >nul 2>&1
-    md "%temp%"
+    ::  C:\Windows Targeted Cleanup (More Controlled) 
+    echo Cleaning temporary files in C:\Windows...
+    for %%a in ( "*.tmp", "*.temp", "*.log", "*.bak", "*.old" ) do ( 
+        del /s /f /q "C:\Windows\%%a" 2>nul  
+    ) 
 
-    del /f /q c:\windows\tempor~1 >nul 2>&1
-
-    for /f "delims=" %%a in ('dir /b /s /ad C:\Users\*') do (
-        if exist "%%a\AppData\Local\Temp" (
-            del /f /q /s "%%a\AppData\Local\Temp\*.*" >nul 2>&1
-            rd /s /q "%%a\AppData\Local\Temp" >nul 2>&1
-            md "%%a\AppData\Local\Temp"
-        )
-        del /f /q /s "%%a\history\*.*" >nul 2>&1
-        del /f /q /s "%%a\cookies\*.*" >nul 2>&1
-        del /f /q /s "%%a\recent\*.*" >nul 2>&1
-        del /f /q /s "%%a\Printers\*.*" >nul 2>&1
-        timeout /t 0 >nul 2>&1 
+    :: SoftwareDistribution Cleanup (with user prompt)
+    echo.
+    set /P "confirm=Clean up SoftwareDistribution\Download folder? (Y/N)? "
+    if /i "%confirm%"=="Y" (
+        echo Cleaning SoftwareDistribution\Download...
+        del /s /f /q "C:\Windows\SoftwareDistribution\Download\*"  
+        rd /s /q "C:\Windows\SoftwareDistribution\Download" 
+        md "C:\Windows\SoftwareDistribution\Download" 
+    ) else (
+        echo Skipping SoftwareDistribution\Download cleanup.
     )
 
-    echo  - Temporary files cleared successfully.
+    echo.
+    echo  --------------------------------------------------------
+    echo   Temporary Files Cleared!
+    echo  --------------------------------------------------------
     pause
-    goto :MAIN_MENU
 
 :: 2. Manage Startup Programs
 :STARTUP
@@ -258,60 +288,198 @@ if errorlevel 1 goto :CLEANTEMP
 :GPEDIT
     cls 
     echo  --------------------------------------------------------
-    echo   Group Policy Optimizations (Advanced)
+    echo   Group Policy and Performance Optimizations
     echo  --------------------------------------------------------
     echo.
-    echo  WARNING: Modifying Group Policy settings can significantly 
-    echo  impact your system. Proceed with extreme caution! 
+    echo  WARNING: Modifying system settings can impact stability. 
+    echo  Proceed with caution and create a restore point if needed.
     echo.
-    echo  Choose a Group Policy optimization:
-    echo    1.  Disable Automatic Windows Updates (Not Recommended!)
-    echo    2.  Configure for Best Performance
-    echo    3.  Disable User Account Control (UAC) Prompts (Not Recommended - Reduces Security)
-    echo    4.  Back to Main Menu
+    echo  Choose an optimization:
+    echo    1.  Delay Automatic Windows Updates (Less Secure)
+    echo    2.  Disable User Account Control (UAC) Prompts (Not Recommended - Reduces Security)
+    echo    3.  Enable Fast Startup (with Hibernation Tweaks)
+    echo    4.  Disable Visual Effects (for best performance)
+    echo    5.  Adjust Processor Scheduling 
+    echo    6.  Manage Services (Advanced Users Only!)
+    echo    7.  Back to Main Menu
     echo.
-    choice /c 1234 /n /m "Enter your choice: "
+    choice /c 12345678 /n /m "Enter your choice: "
 
-    if errorlevel 4 goto :MAIN_MENU
-    if errorlevel 3 goto :DISABLE_UAC_PROMPTS
-    if errorlevel 2 goto :BEST_PERFORMANCE
-    if errorlevel 1 goto :DISABLE_AUTO_UPDATES
+    if errorlevel 7 goto :MAIN_MENU
+    if errorlevel 6 goto :MANAGE_SERVICES
+    if errorlevel 5 goto :PROCESSOR_SCHEDULING
+    if errorlevel 4 goto :DISABLE_VISUAL_EFFECTS 
+    if errorlevel 3 goto :ENABLE_FAST_STARTUP
+    if errorlevel 2 goto :DISABLE_UAC_PROMPTS
+    if errorlevel 1 goto :DELAY_UPDATES 
 
-:DISABLE_AUTO_UPDATES
+:DELAY_UPDATES 
     echo  --------------------------------------------------------
-    echo   WARNING: Disabling automatic updates is NOT recommended!
-    echo   It leaves your system vulnerable to security threats.
+    echo   WARNING: Delaying updates still carries security risks!
+    echo   Ensure you apply updates manually and regularly.
     echo  --------------------------------------------------------
     echo.
-    pause 
-    
-    REM --- Add Group Policy commands to disable auto-updates here ---
-    gpupdate /force
-    echo  - Group Policy settings applied. 
-    pause
-    goto :GPEDIT
-
-:BEST_PERFORMANCE
-    echo  - Opening Group Policy Editor for performance settings...
-    gpedit.msc /s ComputerConfiguration.AdministrativeTemplates.System.Performance
+    set /p "delayDays=Enter the number of days to delay updates (max 35): "
+    if %delayDays% gtr 35 set delayDays=35
+    reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" /v "DeferFeatureUpdatesPeriodInDays" /t REG_DWORD /d %delayDays% /f >nul 2>&1
+    reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" /v "DeferQualityUpdatesPeriodInDays" /t REG_DWORD /d %delayDays% /f >nul 2>&1
+    echo  - Updates delayed. Remember to install them manually.
     pause
     goto :GPEDIT
 
 :DISABLE_UAC_PROMPTS
-    echo.
     echo  --------------------------------------------------------
-    echo   WARNING: Disabling UAC prompts significantly reduces 
-    echo   your system's security. It is NOT recommended!
+    echo   WARNING: Disabling UAC significantly reduces security!
+    echo   Proceed only if you understand the risks.
     echo  --------------------------------------------------------
     echo.
     pause 
-
     reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "EnableLUA" /t REG_DWORD /d 0 /f >nul 2>&1
-    echo  - Registry key HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\EnableLUA set to 0. 
     echo  - UAC prompts disabled. A restart is required.
     pause
     goto :GPEDIT
 
+:ENABLE_FAST_STARTUP 
+    powercfg /hibernate on >nul 2>&1  
+    reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Power" /v "HiberbootEnabled" /t REG_DWORD /d 1 /f >nul 2>&1
+    echo  - Fast Startup (with Hibernation) enabled.
+    pause
+    goto :GPEDIT
+
+:DISABLE_VISUAL_EFFECTS
+    echo  Disabling visual effects...
+    pause
+    reg add "HKCU\Control Panel\Desktop" /v "UserPreferencesMask" /t REG_BINARY /d 90010000 /f >nul 2>&1
+    reg add "HKCU\Control Panel\Desktop\WindowMetrics" /v "MinAnimate" /t REG_SZ /d 0 /f >nul 2>&1
+    echo  - Visual effects settings applied.
+    pause
+    goto :GPEDIT
+
+:PROCESSOR_SCHEDULING
+    echo.
+    echo  --------------------------------------------------------
+    echo   Processor scheduling options:
+    echo     1. Optimize for Background Processes 
+    echo     2. Optimize for Programs
+    echo     3. Back to Previous Menu
+    echo  --------------------------------------------------------
+    echo.
+    choice /c 123 /n /m "Enter your choice: "
+
+    if errorlevel 3 goto :GPEDIT 
+    if errorlevel 2 (
+        powercfg /SETDCVALUEINDEX SCHEME_CURRENT 0b621858-018a-4bbb-a0e7-0e7f60eeec18 75b0ae3f-bce0-45ca-8c62-87d78b76c147 0
+    ) else (
+       powercfg /SETDCVALUEINDEX SCHEME_CURRENT 0b621858-018a-4bbb-a0e7-0e7f60eeec18 75b0ae3f-bce0-45ca-8c62-87d78b76c147 1
+    )
+    powercfg /SETACVALUEINDEX SCHEME_CURRENT 0b621858-018a-4bbb-a0e7-0e7f60eeec18 75b0ae3f-bce0-45ca-8c62-87d78b76c147 1
+    echo  - Processor scheduling changed.
+    pause
+    goto :GPEDIT
+
+:MANAGE_SERVICES
+    echo.
+    echo  --------------------------------------------------------
+    echo   WARNING: Modifying services can make your system unstable!
+    echo   Proceed with EXTREME CAUTION and only if you know 
+    echo   exactly what you're doing. 
+    echo  --------------------------------------------------------
+    echo.
+    pause
+
+    echo  --------------------------------------------------------
+    echo   Choose an action:
+    echo      1. List All Services
+    echo      2. Disable a Service (Recommended List)
+    echo      3. Enable a Service
+    echo      4. Set a Service to Manual (Start Only When Needed) 
+    echo      5. Back to Previous Menu
+    echo  --------------------------------------------------------
+    choice /c 12345 /n /m "Enter your choice: "
+
+    if errorlevel 5 goto :GPEDIT
+    if errorlevel 4 goto :SET_SERVICE_MANUAL
+    if errorlevel 3 goto :ENABLE_SERVICE
+    if errorlevel 2 goto :DISABLE_RECOMMENDED_SERVICE 
+    if errorlevel 1 goto :LIST_SERVICES
+
+:LIST_SERVICES
+    echo.
+    echo  Listing services... (This might take a moment)
+    echo.
+    sc query type= service state= all | more
+    pause
+    goto :MANAGE_SERVICES
+
+:DISABLE_RECOMMENDED_SERVICE
+    echo.
+    echo  --------------------------------------------------------
+    echo   Potentially Safe Services to Disable (But Research First!):
+    echo      1. Bluetooth Support Service (bthserv)
+    echo      2. Fax 
+    echo      3. Print Spooler (Spooler)
+    echo      4. Windows Media Player Network Sharing Service
+    echo      5. Downloaded Maps Manager (MapsBroker)
+    echo      6. Offline Files (CscService)
+    echo      7. Secondary Logon (seclogon)
+    echo      8. Windows Error Reporting Service (WerSvc)
+    echo      9. Back to Service Menu
+    echo  --------------------------------------------------------
+    choice /c 123456789 /n /m "Enter your choice (or 9 to go back): "
+
+    if errorlevel 9 goto :MANAGE_SERVICES
+    if errorlevel 8 set serviceName="WerSvc"
+    if errorlevel 7 set serviceName="seclogon"
+    if errorlevel 6 set serviceName="CscService" 
+    if errorlevel 5 set serviceName="MapsBroker"
+    if errorlevel 4 set serviceName="WMPNetworkSvc"
+    if errorlevel 3 set serviceName="Spooler"
+    if errorlevel 2 set serviceName="Fax"
+    if errorlevel 1 set serviceName="bthserv"
+
+    sc config "%serviceName%" start= disabled >nul 2>&1
+    if %errorlevel% == 0 (
+        echo  - Service "%serviceName%" disabled. 
+    ) else (
+        echo  - Error disabling service "%serviceName%". Make sure the name is correct.
+    )
+    pause
+    goto :MANAGE_SERVICES
+
+:ENABLE_SERVICE
+    echo.
+    set /p "serviceName=Enter the EXACT name of the service to enable: "
+    sc config "%serviceName%" start= auto >nul 2>&1 
+    if %errorlevel% == 0 (
+        echo  - Service "%serviceName%" set to start automatically. 
+    ) else (
+        echo  - Error enabling service "%serviceName%". Make sure the name is correct.
+    )
+    pause
+    goto :MANAGE_SERVICES
+
+:SET_SERVICE_MANUAL
+    echo.
+    echo  --------------------------------------------------------
+    echo   Services You Might Consider Setting to Manual: 
+    echo      1. Application Identity (AppIDSvc)
+    echo      2. Superfetch (SysMain) 
+    echo      3. Back to Service Menu
+    echo  --------------------------------------------------------
+    choice /c 123 /n /m "Enter your choice (or 3 to go back): "
+
+    if errorlevel 3 goto :MANAGE_SERVICES
+    if errorlevel 2 set serviceName="SysMain"
+    if errorlevel 1 set serviceName="AppIDSvc"
+
+    sc config "%serviceName%" start= demand >nul 2>&1 
+    if %errorlevel% == 0 (
+        echo  - Service "%serviceName%" set to start manually (on demand).
+    ) else (
+        echo  - Error setting service "%serviceName%" to manual. Make sure the name is correct.
+    )
+    pause
+    goto :MANAGE_SERVICES
 :: 8. Ultimate Performance Mode (Advanced)
 :ULTIMATE_PERFORMANCE
     cls
