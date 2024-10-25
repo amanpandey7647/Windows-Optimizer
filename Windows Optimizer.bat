@@ -36,6 +36,7 @@ echo   Windows Optimizer - Main Menu
 echo  --------------------------------------------------------
 echo.
 echo  Choose an optimization option:
+echo  Note - Choose Any One 123456789AB (A is for otion 10 and B is for 11)
 echo    1.  Clear Temporary Files
 echo    2.  Restart Tasks
 echo    3.  Defragment Disk (HDD Only)
