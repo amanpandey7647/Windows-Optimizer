@@ -1,6 +1,5 @@
 # System Optimization Script (Batch Script)
 
-'''
 This batch script provides a menu-driven interface for performing various system optimizations on Windows, including:
 
 **Core Features:**
@@ -47,4 +46,3 @@ This script is released under the MIT License.
 **Contributing:**
 
 Contributions are welcome! Please open an issue or submit a pull request if you have any suggestions or improvements. 
-'''
