@@ -59,10 +59,40 @@ Cutting-edge Windows 11 optimizations including:
 
 ## 🛠️ Installation & Usage
 
+### Method 1: Direct Download
 1. **Download**: Save the script as `optimze.bat`
 2. **Run as Administrator**: Right-click → Run as administrator
 3. **Navigate Menu**: Use number keys to select options
 4. **Follow Prompts**: Each option provides clear instructions
+
+### Method 2: Git Clone (Recommended)
+```bash
+# Clone the repository
+git clone https://github.com/amanpandey7647/Windows-Optimizer.git
+
+# Navigate to the directory
+cd Windows-Optimizer
+
+# Run the script as administrator
+# On Windows: Right-click Windows Optimizer.bat → Run as administrator
+# On PowerShell/Command Prompt: Run as administrator, then execute the .bat file
+```
+
+### Method 3: Direct Download via curl
+```bash
+# Download the script directly
+curl -o "Windows Optimizer.bat" "https://raw.githubusercontent.com/amanpandey7647/Windows-Optimizer/refs/heads/main/Windows%20Optimizer.bat"
+
+# Run as administrator (see Method 1)
+```
+
+### Method 4: PowerShell Download
+```powershell
+# Download using PowerShell
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/amanpandey7647/Windows-Optimizer/refs/heads/main/Windows%20Optimizer.bat" -OutFile "Windows Optimizer.bat"
+```
+
+**Repository**: [https://github.com/amanpandey7647/Windows-Optimizer](https://github.com/amanpandey7647/Windows-Optimizer)
 
 ### Menu Navigation
 ```
